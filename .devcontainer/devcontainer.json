@@ -1,0 +1,20 @@
+{
+  "name": "contractual",
+  "build": {
+    "dockerfile": "../Dockerfile",
+    "target": "dev"
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance"
+      ]
+    }
+  },
+  "workspaceMount": "source=${localWorkspaceFolder},target=/app,type=bind,consistency=cached",
+  "workspaceFolder": "/app",
+  "forwardPorts": [8000, 3000],
+  "postCreateCommand": "cd backend && pip install -r requirements.txt && cd ../frontend && npm install",
+  "postStartCommand": "cd /app/backend && python manage.py migrate && python manage.py runserver 0.0.0.0:8000 & cd /app/frontend && npm run dev"
+}

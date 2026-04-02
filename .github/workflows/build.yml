@@ -1,0 +1,131 @@
+name: Build and push to GHCR
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+
+env:
+  IMAGE: ghcr.io/${{ github.repository }}
+
+jobs:
+  build-amd64:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/build-push-action@v6
+        id: build
+        with:
+          context: .
+          target: prod
+          platforms: linux/amd64
+          outputs: type=image,name=${{ env.IMAGE }},push-by-digest=true,name-canonical=true,push=true
+
+      - name: Export amd64 digest
+        run: |
+          mkdir -p /tmp/digests/amd64
+          digest="${{ steps.build.outputs.digest }}"
+          touch "/tmp/digests/amd64/${digest#sha256:}"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: digests-amd64
+          path: /tmp/digests/amd64/*
+          if-no-files-found: error
+          retention-days: 1
+
+  build-arm64:
+    runs-on: ubuntu-24.04-arm
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/build-push-action@v6
+        id: build
+        with:
+          context: .
+          target: prod
+          platforms: linux/arm64
+          outputs: type=image,name=${{ env.IMAGE }},push-by-digest=true,name-canonical=true,push=true
+
+      - name: Export arm64 digest
+        run: |
+          mkdir -p /tmp/digests/arm64
+          digest="${{ steps.build.outputs.digest }}"
+          touch "/tmp/digests/arm64/${digest#sha256:}"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: digests-arm64
+          path: /tmp/digests/arm64/*
+          if-no-files-found: error
+          retention-days: 1
+
+  merge:
+    runs-on: ubuntu-24.04
+    needs: [build-amd64, build-arm64]
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: /tmp/digests
+          pattern: digests-*
+          merge-multiple: true
+
+      - uses: docker/metadata-action@v5
+        id: meta
+        with:
+          images: ${{ env.IMAGE }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Create and push multi-arch manifests
+        run: |
+          set -euo pipefail
+
+          digest_refs=""
+          for file in /tmp/digests/*; do
+            digest="$(basename "$file")"
+            digest_refs="$digest_refs ${{ env.IMAGE }}@sha256:$digest"
+          done
+
+          while IFS= read -r tag; do
+            [ -n "$tag" ] || continue
+            docker buildx imagetools create -t "$tag" $digest_refs
+          done <<< "${{ steps.meta.outputs.tags }}"
