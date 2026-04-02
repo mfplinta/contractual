@@ -1,0 +1,25 @@
+:80 {
+	handle /api/* {
+		reverse_proxy localhost:8000
+	}
+
+	handle /admin/* {
+		reverse_proxy localhost:8000
+	}
+
+	handle_path /media/* {
+		root * /app/data/media
+		file_server
+	}
+
+	handle_path /static/* {
+		root * /app/backend/staticfiles
+		file_server
+	}
+
+	handle {
+		root * /app/frontend/dist
+		try_files {path} /index.html
+		file_server
+	}
+}

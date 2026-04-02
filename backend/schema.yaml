@@ -1,0 +1,2625 @@
+openapi: 3.0.3
+info:
+  title: Contractual API
+  version: 0.0.0
+paths:
+  /api/auth/csrf/:
+    get:
+      operationId: authCsrfRetrieve
+      description: Return a CSRF token so the SPA can make POST requests.
+      tags:
+      - auth
+      security:
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/auth/login/:
+    post:
+      operationId: authLoginCreate
+      description: |-
+        Check the credentials and return the REST Token
+        if the credentials are valid and authenticated.
+        Calls Django Auth login method to register User ID
+        in Django session framework
+
+        Accept the following POST parameters: username, password
+        Return the REST Framework Token Object's key.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Login'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Login'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Login'
+        required: true
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Login'
+          description: ''
+  /api/auth/logout/:
+    get:
+      operationId: authLogoutRetrieve
+      description: |-
+        Calls Django logout method and delete the Token object
+        assigned to the current User object.
+
+        Accepts/Returns nothing.
+      tags:
+      - auth
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+    post:
+      operationId: authLogoutCreate
+      description: |-
+        Calls Django logout method and delete the Token object
+        assigned to the current User object.
+
+        Accepts/Returns nothing.
+      tags:
+      - auth
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/auth/password/change/:
+    post:
+      operationId: authPasswordChangeCreate
+      description: |-
+        Calls Django Auth SetPasswordForm save method.
+
+        Accepts the following POST parameters: new_password1, new_password2
+        Returns the success/fail message.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PasswordChange'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PasswordChange'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordChange'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasswordChange'
+          description: ''
+  /api/auth/user/:
+    get:
+      operationId: authUserRetrieve
+      description: |-
+        Reads and updates UserModel fields
+        Accepts GET, PUT, PATCH methods.
+
+        Default accepted fields: username, first_name, last_name
+        Default display fields: pk, username, email, first_name, last_name
+        Read-only fields: pk, email
+
+        Returns UserModel fields.
+      tags:
+      - auth
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    put:
+      operationId: authUserUpdate
+      description: |-
+        Reads and updates UserModel fields
+        Accepts GET, PUT, PATCH methods.
+
+        Default accepted fields: username, first_name, last_name
+        Default display fields: pk, username, email, first_name, last_name
+        Read-only fields: pk, email
+
+        Returns UserModel fields.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/User'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/User'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    patch:
+      operationId: authUserPartialUpdate
+      description: |-
+        Reads and updates UserModel fields
+        Accepts GET, PUT, PATCH methods.
+
+        Default accepted fields: username, first_name, last_name
+        Default display fields: pk, username, email, first_name, last_name
+        Read-only fields: pk, email
+
+        Returns UserModel fields.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedUser'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedUser'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUser'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /api/clients/:
+    get:
+      operationId: clientsList
+      tags:
+      - clients
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Client'
+          description: ''
+    post:
+      operationId: clientsCreate
+      tags:
+      - clients
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Client'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Client'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Client'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Client'
+          description: ''
+  /api/clients/{id}/:
+    get:
+      operationId: clientsRetrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this client.
+        required: true
+      tags:
+      - clients
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Client'
+          description: ''
+    put:
+      operationId: clientsUpdate
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this client.
+        required: true
+      tags:
+      - clients
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Client'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Client'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Client'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Client'
+          description: ''
+    patch:
+      operationId: clientsPartialUpdate
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this client.
+        required: true
+      tags:
+      - clients
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedClient'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedClient'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedClient'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Client'
+          description: ''
+    delete:
+      operationId: clientsDestroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this client.
+        required: true
+      tags:
+      - clients
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/jobs/:
+    get:
+      operationId: jobsList
+      tags:
+      - jobs
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Job'
+          description: ''
+    post:
+      operationId: jobsCreate
+      tags:
+      - jobs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Job'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobCreateResponse'
+          description: ''
+  /api/jobs/{jobPk}/groups/:
+    post:
+      operationId: jobsGroupsCreate
+      parameters:
+      - in: path
+        name: jobPk
+        schema:
+          type: string
+        required: true
+      tags:
+      - jobs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JobGroupCreateRequest'
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobGroup'
+          description: ''
+  /api/jobs/{jobPk}/groups/{groupPk}/labor/:
+    post:
+      operationId: jobsGroupsLaborCreate
+      parameters:
+      - in: path
+        name: groupPk
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: jobPk
+        schema:
+          type: string
+        required: true
+      tags:
+      - jobs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JobLabor'
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobLabor'
+          description: ''
+  /api/jobs/{jobPk}/groups/{groupPk}/labor/{id}/:
+    patch:
+      operationId: jobsGroupsLaborPartialUpdate
+      parameters:
+      - in: path
+        name: groupPk
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: jobPk
+        schema:
+          type: string
+        required: true
+      tags:
+      - jobs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedJobLabor'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobLabor'
+          description: ''
+    delete:
+      operationId: jobsGroupsLaborDestroy
+      parameters:
+      - in: path
+        name: groupPk
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: jobPk
+        schema:
+          type: string
+        required: true
+      tags:
+      - jobs
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/jobs/{jobPk}/groups/{groupPk}/materials/:
+    post:
+      operationId: jobsGroupsMaterialsCreate
+      parameters:
+      - in: path
+        name: groupPk
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: jobPk
+        schema:
+          type: string
+        required: true
+      tags:
+      - jobs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JobMaterialCreateRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobMaterial'
+          description: ''
+  /api/jobs/{jobPk}/groups/{groupPk}/materials/{id}/:
+    patch:
+      operationId: jobsGroupsMaterialsPartialUpdate
+      parameters:
+      - in: path
+        name: groupPk
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: jobPk
+        schema:
+          type: string
+        required: true
+      tags:
+      - jobs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedJobMaterial'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobMaterial'
+          description: ''
+    delete:
+      operationId: jobsGroupsMaterialsDestroy
+      parameters:
+      - in: path
+        name: groupPk
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: jobPk
+        schema:
+          type: string
+        required: true
+      tags:
+      - jobs
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/jobs/{jobPk}/groups/{id}/:
+    patch:
+      operationId: jobsGroupsPartialUpdate
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: jobPk
+        schema:
+          type: string
+        required: true
+      tags:
+      - jobs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedJobGroup'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobGroup'
+          description: ''
+    delete:
+      operationId: jobsGroupsDestroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: jobPk
+        schema:
+          type: string
+        required: true
+      tags:
+      - jobs
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/jobs/{id}/:
+    get:
+      operationId: jobsRetrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        description: 'Job reference: numeric id or ''draft''.'
+        required: true
+      tags:
+      - jobs
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Job'
+          description: ''
+    put:
+      operationId: jobsUpdate
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this job.
+        required: true
+      tags:
+      - jobs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Job'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Job'
+          description: ''
+    patch:
+      operationId: jobsPartialUpdate
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this job.
+        required: true
+      tags:
+      - jobs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedJob'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Job'
+          description: ''
+    delete:
+      operationId: jobsDestroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this job.
+        required: true
+      tags:
+      - jobs
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/jobs/{id}/begin-edit/:
+    post:
+      operationId: jobsBeginEditCreate
+      description: Snapshot the current job materials and groups before editing begins.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this job.
+        required: true
+      tags:
+      - jobs
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BeginEditResponse'
+          description: ''
+  /api/jobs/{id}/cancel-edit/:
+    post:
+      operationId: jobsCancelEditCreate
+      description: Restore job materials and groups from snapshot, discarding in-progress
+        edits.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this job.
+        required: true
+      tags:
+      - jobs
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CancelEditResponse'
+          description: ''
+  /api/jobs/{id}/export/:
+    get:
+      operationId: jobsExportRetrieve
+      description: GET /jobs/{pk}/export/?show_labor_details=...&fmt=...
+      parameters:
+      - in: query
+        name: fmt
+        schema:
+          type: string
+        description: 'Export format: excel or pdf'
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this job.
+        required: true
+      - in: query
+        name: showLaborDetails
+        schema:
+          type: string
+        description: Show labor details
+      tags:
+      - jobs
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+          description: ''
+  /api/jobs/{id}/materials/:
+    get:
+      operationId: jobsMaterialsRetrieve
+      description: GET /jobs/{pk}/materials/ — returns all groups, materials, and
+        labor items.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        description: 'Job reference: numeric id or ''draft''.'
+        required: true
+      tags:
+      - jobs
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobMaterialsResponse'
+          description: ''
+  /api/jobs/{id}/materials/reorder/:
+    post:
+      operationId: jobsMaterialsReorderCreate
+      description: POST /jobs/{pk}/materials/reorder/
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        description: 'Job reference: numeric id or ''draft''.'
+        required: true
+      tags:
+      - jobs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReorderMaterialRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReorderMaterialResponse'
+          description: ''
+  /api/jobs/{id}/tax-rate/:
+    post:
+      operationId: jobsTaxRateCreate
+      description: POST /jobs/{pk}/tax-rate/
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        description: 'Job reference: numeric id or ''draft''.'
+        required: true
+      tags:
+      - jobs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTaxRateRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateTaxRateResponse'
+          description: ''
+  /api/materials/:
+    get:
+      operationId: materialsList
+      tags:
+      - materials
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MaterialNested'
+          description: ''
+    post:
+      operationId: materialsCreate
+      tags:
+      - materials
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MaterialNested'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MaterialNested'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MaterialNested'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MaterialNested'
+          description: ''
+  /api/materials/{id}/:
+    get:
+      operationId: materialsRetrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this material.
+        required: true
+      tags:
+      - materials
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MaterialNested'
+          description: ''
+    put:
+      operationId: materialsUpdate
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this material.
+        required: true
+      tags:
+      - materials
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MaterialNested'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MaterialNested'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MaterialNested'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MaterialNested'
+          description: ''
+    patch:
+      operationId: materialsPartialUpdate
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this material.
+        required: true
+      tags:
+      - materials
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedMaterialNested'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedMaterialNested'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedMaterialNested'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MaterialNested'
+          description: ''
+    delete:
+      operationId: materialsDestroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this material.
+        required: true
+      tags:
+      - materials
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/scrape/{scraperId}/:
+    get:
+      operationId: scrapeRetrieve
+      description: /scrape/<str:scraper_id>/?sku=...
+      parameters:
+      - in: path
+        name: scraperId
+        schema:
+          type: string
+        required: true
+      - in: query
+        name: sku
+        schema:
+          type: string
+        required: true
+      tags:
+      - scrape
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScraperPriceResponse'
+          description: ''
+  /api/settings/:
+    get:
+      operationId: settingsRetrieve
+      description: GET /settings/
+      tags:
+      - settings
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SettingsResponse'
+          description: ''
+    put:
+      operationId: settingsUpdate
+      description: PUT /settings/
+      tags:
+      - settings
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Settings'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Settings'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Settings'
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/settings/companyLogo/:
+    put:
+      operationId: settingsCompanyLogoUpdate
+      description: PUT /settings/companyLogo/
+      tags:
+      - settings
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                logo:
+                  type: string
+                  format: binary
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompanyLogoResponse'
+          description: ''
+    delete:
+      operationId: settingsCompanyLogoDestroy
+      description: DELETE /settings/companyLogo/
+      tags:
+      - settings
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/stores/:
+    get:
+      operationId: storesList
+      tags:
+      - stores
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Store'
+          description: ''
+    post:
+      operationId: storesCreate
+      tags:
+      - stores
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Store'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Store'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Store'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Store'
+          description: ''
+  /api/stores/{id}/:
+    get:
+      operationId: storesRetrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this store.
+        required: true
+      tags:
+      - stores
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Store'
+          description: ''
+    put:
+      operationId: storesUpdate
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this store.
+        required: true
+      tags:
+      - stores
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Store'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Store'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Store'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Store'
+          description: ''
+    patch:
+      operationId: storesPartialUpdate
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this store.
+        required: true
+      tags:
+      - stores
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedStore'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedStore'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedStore'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Store'
+          description: ''
+    delete:
+      operationId: storesDestroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this store.
+        required: true
+      tags:
+      - stores
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/system/:
+    get:
+      operationId: systemRetrieve
+      description: /system/
+      tags:
+      - system
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SystemInfoResponse'
+          description: ''
+  /api/tags/:
+    get:
+      operationId: tagsList
+      tags:
+      - tags
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Tag'
+          description: ''
+    post:
+      operationId: tagsCreate
+      tags:
+      - tags
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Tag'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Tag'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Tag'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tag'
+          description: ''
+  /api/tags/{id}/:
+    get:
+      operationId: tagsRetrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this tag.
+        required: true
+      tags:
+      - tags
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tag'
+          description: ''
+    put:
+      operationId: tagsUpdate
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this tag.
+        required: true
+      tags:
+      - tags
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Tag'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Tag'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Tag'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tag'
+          description: ''
+    patch:
+      operationId: tagsPartialUpdate
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this tag.
+        required: true
+      tags:
+      - tags
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedTag'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedTag'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedTag'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tag'
+          description: ''
+    delete:
+      operationId: tagsDestroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this tag.
+        required: true
+      tags:
+      - tags
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/units/:
+    get:
+      operationId: unitsList
+      tags:
+      - units
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Unit'
+          description: ''
+    post:
+      operationId: unitsCreate
+      tags:
+      - units
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Unit'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Unit'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Unit'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Unit'
+          description: ''
+  /api/units/{id}/:
+    get:
+      operationId: unitsRetrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this unit.
+        required: true
+      tags:
+      - units
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Unit'
+          description: ''
+    put:
+      operationId: unitsUpdate
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this unit.
+        required: true
+      tags:
+      - units
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Unit'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Unit'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Unit'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Unit'
+          description: ''
+    patch:
+      operationId: unitsPartialUpdate
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this unit.
+        required: true
+      tags:
+      - units
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedUnit'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedUnit'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUnit'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Unit'
+          description: ''
+    delete:
+      operationId: unitsDestroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this unit.
+        required: true
+      tags:
+      - units
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+components:
+  schemas:
+    BeginEditResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+      required:
+      - ok
+    CancelEditResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+      required:
+      - ok
+    Client:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        phone:
+          type: string
+          nullable: true
+          maxLength: 20
+        email:
+          type: string
+          format: email
+          nullable: true
+          maxLength: 254
+        address:
+          type: string
+          nullable: true
+          maxLength: 512
+        city:
+          type: string
+          nullable: true
+          maxLength: 255
+        state:
+          type: string
+          nullable: true
+          maxLength: 255
+      required:
+      - id
+      - name
+    CompanyLogoResponse:
+      type: object
+      properties:
+        companyLogoUrl:
+          type: string
+      required:
+      - companyLogoUrl
+    DefaultExportFormatEnum:
+      enum:
+      - excel
+      - pdf
+      type: string
+      description: |-
+        * `excel` - excel
+        * `pdf` - pdf
+    Job:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        clientId:
+          type: integer
+          writeOnly: true
+        clientName:
+          type: string
+          writeOnly: true
+        client:
+          allOf:
+          - $ref: '#/components/schemas/Client'
+          readOnly: true
+        description:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+          nullable: true
+        updatedAt:
+          type: string
+          format: date-time
+          nullable: true
+        status:
+          $ref: '#/components/schemas/StatusEnum'
+        taxRate:
+          type: number
+          format: double
+          maximum: 100
+          minimum: -100
+          exclusiveMaximum: true
+          exclusiveMinimum: true
+        subtotal:
+          type: number
+          format: double
+          maximum: 10000000000
+          minimum: -10000000000
+          exclusiveMaximum: true
+          exclusiveMinimum: true
+          readOnly: true
+        taxTotal:
+          type: number
+          format: double
+          maximum: 10000000000
+          minimum: -10000000000
+          exclusiveMaximum: true
+          exclusiveMinimum: true
+          readOnly: true
+        total:
+          type: number
+          format: double
+          maximum: 10000000000
+          minimum: -10000000000
+          exclusiveMaximum: true
+          exclusiveMinimum: true
+          readOnly: true
+      required:
+      - client
+      - description
+      - id
+      - subtotal
+      - taxTotal
+      - total
+    JobCreateResponse:
+      type: object
+      properties:
+        job:
+          $ref: '#/components/schemas/Job'
+      required:
+      - job
+    JobGroup:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        jobId:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          nullable: true
+          maxLength: 255
+        sortOrder:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+        subtotal:
+          type: number
+          format: double
+          maximum: 10000000000
+          minimum: -10000000000
+          exclusiveMaximum: true
+          exclusiveMinimum: true
+          readOnly: true
+        taxTotal:
+          type: number
+          format: double
+          maximum: 10000000000
+          minimum: -10000000000
+          exclusiveMaximum: true
+          exclusiveMinimum: true
+          readOnly: true
+        total:
+          type: number
+          format: double
+          maximum: 10000000000
+          minimum: -10000000000
+          exclusiveMaximum: true
+          exclusiveMinimum: true
+          readOnly: true
+        laborTimeTotal:
+          type: number
+          format: double
+          maximum: 10000000000
+          minimum: -10000000000
+          exclusiveMaximum: true
+          exclusiveMinimum: true
+          readOnly: true
+        laborCostTotal:
+          type: number
+          format: double
+          maximum: 10000000000
+          minimum: -10000000000
+          exclusiveMaximum: true
+          exclusiveMinimum: true
+          readOnly: true
+      required:
+      - id
+      - jobId
+      - laborCostTotal
+      - laborTimeTotal
+      - subtotal
+      - taxTotal
+      - total
+    JobGroupCreateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          nullable: true
+        splitAfterItemId:
+          type: integer
+        sourceGroupId:
+          type: integer
+    JobLabor:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        groupId:
+          type: integer
+          readOnly: true
+        description:
+          type: string
+        time:
+          type: number
+          format: double
+          maximum: 100000000
+          minimum: -100000000
+          exclusiveMaximum: true
+          exclusiveMinimum: true
+        cost:
+          type: number
+          format: double
+          maximum: 100000000
+          minimum: -100000000
+          exclusiveMaximum: true
+          exclusiveMinimum: true
+      required:
+      - groupId
+      - id
+    JobMaterial:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        groupId:
+          type: integer
+          readOnly: true
+        variantId:
+          type: integer
+        storeId:
+          type: integer
+        description:
+          type: string
+          readOnly: true
+        priceInfo:
+          allOf:
+          - $ref: '#/components/schemas/StoreNested'
+          nullable: true
+          readOnly: true
+        images:
+          type: array
+          items:
+            $ref: '#/components/schemas/MaterialImage'
+          readOnly: true
+        quantity:
+          type: number
+          format: double
+          maximum: 1000000
+          minimum: -1000000
+          exclusiveMaximum: true
+          exclusiveMinimum: true
+        unitPrice:
+          type: number
+          format: double
+          maximum: 100000000
+          minimum: -100000000
+          exclusiveMaximum: true
+          exclusiveMinimum: true
+        totalPrice:
+          type: number
+          format: double
+          maximum: 100000000
+          minimum: -100000000
+          exclusiveMaximum: true
+          exclusiveMinimum: true
+        subtotal:
+          type: number
+          format: double
+          maximum: 100000000
+          minimum: -100000000
+          exclusiveMaximum: true
+          exclusiveMinimum: true
+          readOnly: true
+        tax:
+          type: number
+          format: double
+          maximum: 100000000
+          minimum: -100000000
+          exclusiveMaximum: true
+          exclusiveMinimum: true
+        notes:
+          type: string
+          nullable: true
+        wasPriceEdited:
+          type: boolean
+        ignored:
+          type: boolean
+        unit:
+          type: string
+          nullable: true
+          maxLength: 100
+        sortOrder:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+      required:
+      - description
+      - groupId
+      - id
+      - images
+      - priceInfo
+      - storeId
+      - subtotal
+      - totalPrice
+      - unitPrice
+      - variantId
+    JobMaterialCreateRequest:
+      type: object
+      properties:
+        variantId:
+          type: integer
+        storeId:
+          type: integer
+        quantity:
+          type: number
+          format: double
+          maximum: 1000000
+          minimum: -1000000
+          exclusiveMaximum: true
+          exclusiveMinimum: true
+        notes:
+          type: string
+        wasPriceEdited:
+          type: boolean
+        ignored:
+          type: boolean
+        unit:
+          type: string
+        sortOrder:
+          type: integer
+      required:
+      - storeId
+      - variantId
+    JobMaterialsResponse:
+      type: object
+      properties:
+        materialItems:
+          type: array
+          items:
+            $ref: '#/components/schemas/JobMaterial'
+        groups:
+          type: array
+          items:
+            $ref: '#/components/schemas/JobGroup'
+        laborItems:
+          type: array
+          items:
+            $ref: '#/components/schemas/JobLabor'
+      required:
+      - groups
+      - laborItems
+      - materialItems
+    Login:
+      type: object
+      properties:
+        username:
+          type: string
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+      required:
+      - password
+    MaterialImage:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        materialId:
+          type: integer
+          nullable: true
+          readOnly: true
+        variantId:
+          type: integer
+          nullable: true
+          readOnly: true
+        storeId:
+          type: integer
+          nullable: true
+          readOnly: true
+        image:
+          type: string
+          format: uri
+      required:
+      - id
+      - image
+      - materialId
+      - storeId
+      - variantId
+    MaterialNested:
+      type: object
+      description: Adds nested create feature
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        description:
+          type: string
+          maxLength: 512
+        variants:
+          type: array
+          items:
+            $ref: '#/components/schemas/MaterialVariantNested'
+        tags:
+          type: array
+          items:
+            type: string
+        images:
+          type: array
+          items:
+            $ref: '#/components/schemas/MaterialImage'
+          readOnly: true
+      required:
+      - description
+      - id
+      - images
+      - tags
+      - variants
+    MaterialVariantNested:
+      type: object
+      description: Adds nested create feature
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          nullable: true
+        unit:
+          type: string
+        stores:
+          type: array
+          items:
+            $ref: '#/components/schemas/StoreNested'
+        images:
+          type: array
+          items:
+            $ref: '#/components/schemas/MaterialImage'
+          readOnly: true
+        isProxy:
+          type: boolean
+          readOnly: true
+        sourceVariantId:
+          type: integer
+          nullable: true
+          readOnly: true
+        divisor:
+          type: number
+          format: double
+          maximum: 1000000
+          minimum: -1000000
+          exclusiveMaximum: true
+          exclusiveMinimum: true
+          readOnly: true
+          nullable: true
+        proxyVariants:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProxyVariantWrite'
+          writeOnly: true
+      required:
+      - divisor
+      - id
+      - images
+      - isProxy
+      - sourceVariantId
+      - stores
+      - unit
+    MaterialsViewModeEnum:
+      enum:
+      - grid
+      - list
+      type: string
+      description: |-
+        * `grid` - grid
+        * `list` - list
+    PasswordChange:
+      type: object
+      properties:
+        oldPassword:
+          type: string
+          maxLength: 128
+        newPassword1:
+          type: string
+          maxLength: 128
+        newPassword2:
+          type: string
+          maxLength: 128
+      required:
+      - newPassword1
+      - newPassword2
+      - oldPassword
+    PatchedClient:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        phone:
+          type: string
+          nullable: true
+          maxLength: 20
+        email:
+          type: string
+          format: email
+          nullable: true
+          maxLength: 254
+        address:
+          type: string
+          nullable: true
+          maxLength: 512
+        city:
+          type: string
+          nullable: true
+          maxLength: 255
+        state:
+          type: string
+          nullable: true
+          maxLength: 255
+    PatchedJob:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        clientId:
+          type: integer
+          writeOnly: true
+        clientName:
+          type: string
+          writeOnly: true
+        client:
+          allOf:
+          - $ref: '#/components/schemas/Client'
+          readOnly: true
+        description:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+          nullable: true
+        updatedAt:
+          type: string
+          format: date-time
+          nullable: true
+        status:
+          $ref: '#/components/schemas/StatusEnum'
+        taxRate:
+          type: number
+          format: double
+          maximum: 100
+          minimum: -100
+          exclusiveMaximum: true
+          exclusiveMinimum: true
+        subtotal:
+          type: number
+          format: double
+          maximum: 10000000000
+          minimum: -10000000000
+          exclusiveMaximum: true
+          exclusiveMinimum: true
+          readOnly: true
+        taxTotal:
+          type: number
+          format: double
+          maximum: 10000000000
+          minimum: -10000000000
+          exclusiveMaximum: true
+          exclusiveMinimum: true
+          readOnly: true
+        total:
+          type: number
+          format: double
+          maximum: 10000000000
+          minimum: -10000000000
+          exclusiveMaximum: true
+          exclusiveMinimum: true
+          readOnly: true
+    PatchedJobGroup:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        jobId:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          nullable: true
+          maxLength: 255
+        sortOrder:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+        subtotal:
+          type: number
+          format: double
+          maximum: 10000000000
+          minimum: -10000000000
+          exclusiveMaximum: true
+          exclusiveMinimum: true
+          readOnly: true
+        taxTotal:
+          type: number
+          format: double
+          maximum: 10000000000
+          minimum: -10000000000
+          exclusiveMaximum: true
+          exclusiveMinimum: true
+          readOnly: true
+        total:
+          type: number
+          format: double
+          maximum: 10000000000
+          minimum: -10000000000
+          exclusiveMaximum: true
+          exclusiveMinimum: true
+          readOnly: true
+        laborTimeTotal:
+          type: number
+          format: double
+          maximum: 10000000000
+          minimum: -10000000000
+          exclusiveMaximum: true
+          exclusiveMinimum: true
+          readOnly: true
+        laborCostTotal:
+          type: number
+          format: double
+          maximum: 10000000000
+          minimum: -10000000000
+          exclusiveMaximum: true
+          exclusiveMinimum: true
+          readOnly: true
+    PatchedJobLabor:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        groupId:
+          type: integer
+          readOnly: true
+        description:
+          type: string
+        time:
+          type: number
+          format: double
+          maximum: 100000000
+          minimum: -100000000
+          exclusiveMaximum: true
+          exclusiveMinimum: true
+        cost:
+          type: number
+          format: double
+          maximum: 100000000
+          minimum: -100000000
+          exclusiveMaximum: true
+          exclusiveMinimum: true
+    PatchedJobMaterial:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        groupId:
+          type: integer
+          readOnly: true
+        variantId:
+          type: integer
+        storeId:
+          type: integer
+        description:
+          type: string
+          readOnly: true
+        priceInfo:
+          allOf:
+          - $ref: '#/components/schemas/StoreNested'
+          nullable: true
+          readOnly: true
+        images:
+          type: array
+          items:
+            $ref: '#/components/schemas/MaterialImage'
+          readOnly: true
+        quantity:
+          type: number
+          format: double
+          maximum: 1000000
+          minimum: -1000000
+          exclusiveMaximum: true
+          exclusiveMinimum: true
+        unitPrice:
+          type: number
+          format: double
+          maximum: 100000000
+          minimum: -100000000
+          exclusiveMaximum: true
+          exclusiveMinimum: true
+        totalPrice:
+          type: number
+          format: double
+          maximum: 100000000
+          minimum: -100000000
+          exclusiveMaximum: true
+          exclusiveMinimum: true
+        subtotal:
+          type: number
+          format: double
+          maximum: 100000000
+          minimum: -100000000
+          exclusiveMaximum: true
+          exclusiveMinimum: true
+          readOnly: true
+        tax:
+          type: number
+          format: double
+          maximum: 100000000
+          minimum: -100000000
+          exclusiveMaximum: true
+          exclusiveMinimum: true
+        notes:
+          type: string
+          nullable: true
+        wasPriceEdited:
+          type: boolean
+        ignored:
+          type: boolean
+        unit:
+          type: string
+          nullable: true
+          maxLength: 100
+        sortOrder:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+    PatchedMaterialNested:
+      type: object
+      description: Adds nested create feature
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        description:
+          type: string
+          maxLength: 512
+        variants:
+          type: array
+          items:
+            $ref: '#/components/schemas/MaterialVariantNested'
+        tags:
+          type: array
+          items:
+            type: string
+        images:
+          type: array
+          items:
+            $ref: '#/components/schemas/MaterialImage'
+          readOnly: true
+    PatchedStore:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        storeUrl:
+          type: string
+          format: uri
+          maxLength: 200
+    PatchedTag:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+    PatchedUnit:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+    PatchedUser:
+      type: object
+      description: User model w/o password
+      properties:
+        pk:
+          type: integer
+          readOnly: true
+          title: ID
+        username:
+          type: string
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        firstName:
+          type: string
+          maxLength: 150
+        lastName:
+          type: string
+          maxLength: 150
+    ProxyVariantWrite:
+      type: object
+      properties:
+        id:
+          type: integer
+        unit:
+          type: string
+        divisor:
+          type: number
+          format: double
+          maximum: 1000000
+          minimum: -1000000
+          exclusiveMaximum: true
+          exclusiveMinimum: true
+      required:
+      - divisor
+      - unit
+    ReorderMaterialRequest:
+      type: object
+      properties:
+        itemId:
+          type: integer
+        targetGroupId:
+          type: integer
+        targetIndex:
+          type: integer
+      required:
+      - itemId
+      - targetGroupId
+      - targetIndex
+    ReorderMaterialResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+      required:
+      - ok
+    ScraperPriceResponse:
+      type: object
+      properties:
+        price:
+          type: string
+        image:
+          type: string
+          nullable: true
+        sku:
+          type: string
+        error:
+          type: string
+      required:
+      - image
+      - price
+      - sku
+    Settings:
+      type: object
+      properties:
+        taxRate:
+          type: number
+          format: double
+        materialsViewMode:
+          $ref: '#/components/schemas/MaterialsViewModeEnum'
+        accentColor:
+          type: string
+          pattern: ^#[0-9a-fA-F]{6}$
+        defaultExportFormat:
+          $ref: '#/components/schemas/DefaultExportFormatEnum'
+        defaultExportShowLaborDetails:
+          type: boolean
+    SettingsResponse:
+      type: object
+      properties:
+        taxRate:
+          type: number
+          format: double
+        materialsViewMode:
+          type: string
+        accentColor:
+          type: string
+        companyLogoUrl:
+          type: string
+          nullable: true
+        defaultExportFormat:
+          type: string
+        defaultExportShowLaborDetails:
+          type: boolean
+      required:
+      - accentColor
+      - companyLogoUrl
+      - defaultExportFormat
+      - defaultExportShowLaborDetails
+      - materialsViewMode
+      - taxRate
+    StatusEnum:
+      enum:
+      - draft
+      - saved
+      type: string
+      description: |-
+        * `draft` - Draft
+        * `saved` - Saved
+    Store:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        storeUrl:
+          type: string
+          format: uri
+          maxLength: 200
+      required:
+      - id
+      - name
+    StoreNested:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        storeId:
+          type: integer
+          writeOnly: true
+        storeName:
+          type: string
+          writeOnly: true
+        store:
+          allOf:
+          - $ref: '#/components/schemas/Store'
+          readOnly: true
+        sku:
+          type: string
+        price:
+          type: number
+          format: double
+          maximum: 100000000
+          minimum: -100000000
+          exclusiveMaximum: true
+          exclusiveMinimum: true
+        priceFromApi:
+          type: boolean
+        images:
+          type: array
+          items:
+            $ref: '#/components/schemas/MaterialImage'
+          readOnly: true
+      required:
+      - id
+      - images
+      - price
+      - store
+    SystemInfoResponse:
+      type: object
+      properties:
+        hasLibreOffice:
+          type: boolean
+      required:
+      - hasLibreOffice
+    Tag:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+      required:
+      - id
+      - name
+    Unit:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+      required:
+      - id
+      - name
+    UpdateTaxRateRequest:
+      type: object
+      properties:
+        taxRate:
+          type: number
+          format: double
+          maximum: 10000
+          minimum: -10000
+          exclusiveMaximum: true
+          exclusiveMinimum: true
+      required:
+      - taxRate
+    UpdateTaxRateResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+      required:
+      - ok
+    User:
+      type: object
+      description: User model w/o password
+      properties:
+        pk:
+          type: integer
+          readOnly: true
+          title: ID
+        username:
+          type: string
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        firstName:
+          type: string
+          maxLength: 150
+        lastName:
+          type: string
+          maxLength: 150
+      required:
+      - pk
+      - username
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid
