@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="23.948729"
+   height="23.948727"
+   viewBox="0 0 23.948729 23.948727"
+   fill="none"
+   stroke="currentColor"
+   stroke-width="2"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   class="lucide lucide-package-icon lucide-package"
+   version="1.1"
+   id="svg3"
+   sodipodi:docname="package.svg"
+   inkscape:export-filename="package.png"
+   inkscape:export-xdpi="96"
+   inkscape:export-ydpi="96"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs3" />
+  <sodipodi:namedview
+     id="namedview3"
+     pagecolor="#444444"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1">
+    <inkscape:page
+       x="0"
+       y="0"
+       width="23.948729"
+       height="23.948727"
+       id="page2"
+       margin="0"
+       bleed="0" />
+  </sodipodi:namedview>
+  <circle
+     style="fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:2.592;stroke-opacity:1"
+     id="path4"
+     cx="11.974363"
+     cy="11.974363"
+     r="11.974363" />
+  <path
+     d="m 11.041291,21.73 a 2,2 0 0 0 2,0 l 7,-4 a 2,2 0 0 0 1,-1.73 V 8 a 2,2 0 0 0 -1,-1.73 l -7,-4 a 2,2 0 0 0 -2,0 l -6.9999998,4 a 2,2 0 0 0 -1,1.73 v 8 a 2,2 0 0 0 1,1.73 z"
+     id="path1"
+     style="stroke:#4f46e5;stroke-opacity:1" />
+  <path
+     d="M 12.041291,22 V 12"
+     id="path2"
+     style="stroke:#4f46e5;stroke-opacity:1" />
+  <polyline
+     points="3.29 7 12 12 20.71 7"
+     id="polyline2"
+     style="stroke:#4f46e5;stroke-opacity:1"
+     transform="translate(0.04129124)" />
+  <path
+     d="M 7.5412912,4.27 16.541291,9.42"
+     id="path3"
+     style="stroke:#4f46e5;stroke-opacity:1" />
+</svg>

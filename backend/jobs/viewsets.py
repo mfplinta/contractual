@@ -452,7 +452,7 @@ class JobViewSet(viewsets.ModelViewSet):
             pdf_filename = filename.rsplit(".", 1)[0] + ".pdf"
             response = DjangoHttpResponse(pdf_data, content_type="application/pdf")
             response["Content-Disposition"] = (
-                f'attachment; filename="{pdf_filename}"'
+                f'inline; filename="{pdf_filename}"'
             )
             return response
 

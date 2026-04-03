@@ -30,7 +30,7 @@ class StoreAdmin(admin.ModelAdmin):
 
 @admin.register(Unit)
 class UnitAdmin(admin.ModelAdmin):
-    list_display = ('name',)
+    list_display = ('name', 'shorthand')
 
 
 @admin.register(Tag)

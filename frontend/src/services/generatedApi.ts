@@ -1306,17 +1306,21 @@ export type PatchedTagRead = {
 };
 export type Unit = {
   name: string;
+  shorthand?: string | null;
 };
 export type UnitRead = {
   id: number;
   name: string;
+  shorthand?: string | null;
 };
 export type PatchedUnit = {
   name?: string;
+  shorthand?: string | null;
 };
 export type PatchedUnitRead = {
   id?: number;
   name?: string;
+  shorthand?: string | null;
 };
 export const {
   useAuthCsrfRetrieveQuery,

@@ -45,7 +45,7 @@ def build_job_workbook(job_id, show_labor_details=False):
     ws.print_options.horizontalCentered = True
     
     # -- Resize columns/rows --
-    column_widths = [1.29, 0.67, 8.43, 1, 43.57, 8.43, 11.43, 1.14, 11.43, 2, 4.86, 9, 0.67]
+    column_widths = [1.29, 0.67, 5, 4, 38.57, 8.43, 11.43, 1.14, 11.43, 2, 4.86, 9, 0.67]
     for idx, width in enumerate(column_widths, start=1):
         ws.column_dimensions[get_column_letter(idx)].width = width
 
@@ -61,12 +61,12 @@ def build_job_workbook(job_id, show_labor_details=False):
     border_range(ws, 'B4:E7', 'medium')
     style_range(ws, 'B4:E7', fill=PatternFill(fill_type='solid', start_color=COLORS['header']))
 
-    ws['C5'].value = 'Address'
-    ws['C5'].font = Font(bold=True)
-    ws['C5'].alignment = Alignment(horizontal='right')
-    ws['C6'].value = 'City'
-    ws['C6'].font = Font(bold=True)
-    ws['C6'].alignment = Alignment(horizontal='right')
+    ws['D5'].value = 'Address'
+    ws['D5'].font = Font(bold=True)
+    ws['D5'].alignment = Alignment(horizontal='right', indent=1)
+    ws['D6'].value = 'City'
+    ws['D6'].font = Font(bold=True)
+    ws['D6'].alignment = Alignment(horizontal='right', indent=1)
     ws['E5'].value = job.client.address if job.client else ''
     ws['E6'].value = job.client.city if job.client else ''
 
@@ -77,6 +77,7 @@ def build_job_workbook(job_id, show_labor_details=False):
 
     cols = {
         'qty': {'col': start_col + 0, 'text': 'Qty', 'align': 'left'},
+        'unit': {'col': start_col + 1, 'text': '', 'align': 'left'},
         'item': {'col': start_col + 2, 'text': 'Item', 'align': 'left'},
         'store': {'col': start_col + 3, 'text': 'Store', 'align': 'left'},
         'unit_price': {'col': start_col + 4, 'text': 'Unit Price', 'align': 'right', 'format': FORMAT_NUMBER_00},
@@ -88,7 +89,7 @@ def build_job_workbook(job_id, show_labor_details=False):
 
     for group in groups:
         group_materials = JobMaterial.objects.filter(group=group).select_related(
-            'variant', 'variant__material', 'store',
+            'variant', 'variant__material', 'variant__unit', 'store',
         ).order_by('sort_order', 'id')
 
         # Group header
@@ -128,6 +129,11 @@ def build_job_workbook(job_id, show_labor_details=False):
                     cell.number_format = col['format']
             
             ws.cell(row=row_idx, column=cols['qty']['col'], value=float(jm.quantity))
+            ws.cell(
+                row=row_idx,
+                column=cols['unit']['col'],
+                value=(jm.variant.unit.shorthand or jm.variant.unit.name) if jm.variant and jm.variant.unit else '',
+            )
             ws.cell(row=row_idx, column=cols['item']['col'], value=(f"{jm.variant.name} - " if jm.variant and jm.variant.name else "") + (jm.variant.material.description if jm.variant and jm.variant.material else ""))
             ws.cell(row=row_idx, column=cols['store']['col'], value=jm.store.name if jm.store else '')
             ws.cell(row=row_idx, column=cols['unit_price']['col'], value='?' if jm.ignored else float(jm.unit_price))

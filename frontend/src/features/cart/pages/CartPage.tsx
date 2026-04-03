@@ -287,13 +287,18 @@ export const CartPage = () => {
     }
   };
 
-  // Export logic separated
   const doExport = async (jobId: number, format: string, showLaborDetails: boolean) => {
     const params = new URLSearchParams();
     if (format) params.set("fmt", format);
     if (showLaborDetails) params.set("showLaborDetails", "true");
     const queryString = params.toString();
     const url = `/api/jobs/${jobId}/export${queryString ? `?${queryString}` : ""}`;
+
+    if (format === "pdf") {
+      window.open(url, "_blank", "noopener,noreferrer");
+      return;
+    }
+
     const response = await fetch(url);
     if (!response.ok) throw new Error("Export failed");
     const blob = await response.blob();

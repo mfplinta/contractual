@@ -60,7 +60,14 @@ const CONFIGS: Record<ItemKind, ItemConfig> = {
   units: {
     kind: "units",
     title: "Units",
-    fields: [{ key: "name", label: "Name", placeholder: "Unit name" }],
+    fields: [
+      { key: "name", label: "Name", placeholder: "Unit name" },
+      {
+        key: "shorthand",
+        label: "Shorthand",
+        placeholder: "Optional export shorthand",
+      },
+    ],
     getId: (item) => String(item.id),
   },
   tags: {
@@ -122,7 +129,12 @@ function useItemCrud(kind: ItemKind) {
         store: { name: values.name, storeUrl: values.storeUrl || "" },
       } as any).unwrap();
     } else if (kind === "units") {
-      await addUnit({ unit: { name: values.name } } as any).unwrap();
+      await addUnit({
+        unit: {
+          name: values.name,
+          shorthand: values.shorthand || null,
+        },
+      } as any).unwrap();
     } else {
       await addTag({ tag: { name: values.name } } as any).unwrap();
     }
@@ -135,7 +147,13 @@ function useItemCrud(kind: ItemKind) {
         store: { name: values.name, storeUrl: values.storeUrl || "" },
       } as any).unwrap();
     } else if (kind === "units") {
-      await updateUnit({ id, unit: { name: values.name } } as any).unwrap();
+      await updateUnit({
+        id,
+        unit: {
+          name: values.name,
+          shorthand: values.shorthand || null,
+        },
+      } as any).unwrap();
     } else {
       await updateTag({ id, tag: { name: values.name } } as any).unwrap();
     }
