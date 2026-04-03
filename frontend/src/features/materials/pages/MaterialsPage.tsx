@@ -11,13 +11,20 @@ import {
 } from '../materialSlice';
 import { FilterBar, FilterItem } from '@/components/shared/FilterBar';
 import { MaterialCard } from '../components/MaterialCard';
-import { MaterialListRow } from '../components/MaterialListRow';
-import { ResponsiveTable } from '@/components/shared/ResponsiveTable';
+import { MaterialListRow, getMaterialColumns } from '../components/MaterialListRow';
+import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Plus, Filter as FilterIcon, LayoutGrid, List as ListIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import type { TagRead } from '@/services/generatedApi';
+import type { TagRead, MaterialNestedRead } from '@/services/generatedApi';
 import { cn } from '@/lib/utils';
 import { Helmet } from 'react-helmet';
+import {
+  type SortingState,
+  flexRender,
+  getCoreRowModel,
+  getSortedRowModel,
+  useReactTable,
+} from '@tanstack/react-table';
 
 export const MaterialsPage = () => {
   const { searchMaterials, deleteMaterial } = useMaterials();
@@ -33,8 +40,7 @@ export const MaterialsPage = () => {
   const [visibleCount, setVisibleCount] = useState(GRID_PAGE_SIZE);
   const [itemsPerPage, setItemsPerPage] = useState(50);
   const [currentPage, setCurrentPage] = useState(1);
-  const [sortField, setSortField] = useState<'description' | 'variants' | 'price' | null>(null);
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [sorting, setSorting] = useState<SortingState>([]);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
   const tagFilterItems: FilterItem[] = allTags.map(tag => ({
@@ -68,55 +74,44 @@ export const MaterialsPage = () => {
   const selectedFilters = [...selectedTagFilters, ...selectedStoreFilters];
 
   const materials = useMemo(() => {
-    const filtered = searchMaterials(
+    return searchMaterials(
       materialsSearchQuery,
       materialsSelectedTags,
       materialsSelectedStoreIds,
     );
-    
-    // When no sort is active, preserve Fuse relevance order
-    if (!sortField) return filtered;
+  }, [materialsSearchQuery, materialsSelectedTags, materialsSelectedStoreIds, searchMaterials]);
 
-    // Apply sorting
-    const sorted = [...filtered].sort((a, b) => {
-      let aVal: any;
-      let bVal: any;
-      
-      if (sortField === 'variants') {
-        aVal = a.variants.length;
-        bVal = b.variants.length;
-      } else if (sortField === 'price') {
-        const aPrices = a.variants.flatMap(v => v.stores.map(s => s.price));
-        aVal = aPrices.length > 0 ? Math.min(...aPrices) : 0;
-        const bPrices = b.variants.flatMap(v => v.stores.map(s => s.price));
-        bVal = bPrices.length > 0 ? Math.min(...bPrices) : 0;
-      } else {
-        aVal = a[sortField];
-        bVal = b[sortField];
-      }
-      
-      if (aVal < bVal) return sortDirection === 'asc' ? -1 : 1;
-      if (aVal > bVal) return sortDirection === 'asc' ? 1 : -1;
-      return 0;
-    });
-    
-    return sorted;
-  }, [materialsSearchQuery, materialsSelectedTags, materialsSelectedStoreIds, searchMaterials, sortField, sortDirection]);
+  const handleDelete = useCallback((id: number) => {
+    if (confirm('Are you sure you want to delete this material?')) {
+      deleteMaterial(id);
+    }
+  }, [deleteMaterial]);
 
-  const totalPages = Math.ceil(materials.length / itemsPerPage);
-  const paginatedMaterials = materials.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
-  const gridMaterials = materials.slice(0, visibleCount);
-  const hasMoreGrid = visibleCount < materials.length;
+  const columns = useMemo(() => getMaterialColumns(handleDelete), [handleDelete]);
+
+  const table = useReactTable<MaterialNestedRead>({
+    data: materials,
+    columns,
+    state: { sorting },
+    onSortingChange: setSorting,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+  });
+
+  const sortedMaterials = table.getRowModel().rows.map((r) => r.original);
+  const totalPages = Math.ceil(sortedMaterials.length / itemsPerPage);
+  const paginatedMaterials = sortedMaterials.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const gridMaterials = sortedMaterials.slice(0, visibleCount);
+  const hasMoreGrid = visibleCount < sortedMaterials.length;
 
   // Reset visible count when filters/sort change
   useEffect(() => {
     setVisibleCount(GRID_PAGE_SIZE);
-  }, [materialsSearchQuery, materialsSelectedTags, materialsSelectedStoreIds, sortField, sortDirection]);
+  }, [materialsSearchQuery, materialsSelectedTags, materialsSelectedStoreIds, sorting]);
 
   // Reset sort when search query or tag filters change to preserve Fuse relevance order
   useEffect(() => {
-    setSortField(null);
-    setSortDirection('asc');
+    setSorting([]);
   }, [materialsSearchQuery, materialsSelectedTags, materialsSelectedStoreIds]);
 
   // IntersectionObserver for infinite scroll in grid view
@@ -141,26 +136,6 @@ export const MaterialsPage = () => {
     observer.observe(sentinel);
     return () => observer.disconnect();
   }, [viewMode, hasMoreGrid, loadMore]);
-
-  const handleDelete = (id: number) => {
-    if (confirm('Are you sure you want to delete this material?')) {
-      deleteMaterial(id);
-    }
-  };
-
-  const handleSort = (field: 'description' | 'variants' | 'price') => {
-    if (sortField === field) {
-      if (sortDirection === 'desc') {
-        setSortField(null);
-        setSortDirection('asc');
-      } else {
-        setSortDirection('desc');
-      }
-    } else {
-      setSortField(field);
-      setSortDirection('asc');
-    }
-  };
 
   return (
     <div>
@@ -248,54 +223,39 @@ export const MaterialsPage = () => {
               )}
             </>
           ) : (
-            <ResponsiveTable
-              columns={[
-                { key: 'handle', label: '', minWidth: '48px', width: 48 },
-                { key: 'image', label: '', minWidth: '64px', width: 64 },
-                {
-                  key: 'material',
-                  label: 'Material',
-                  minWidth: '200px',
-                  resizable: true,
-                  expand: true,
-                  onSort: () => handleSort('description'),
-                  sortDirection: sortField === 'description' ? sortDirection : null,
-                },
-                {
-                  key: 'unit',
-                  label: 'Unit',
-                  minWidth: '80px',
-                  resizable: true,
-                  onSort: () => handleSort('variants'),
-                  sortDirection: sortField === 'variants' ? sortDirection : null,
-                },
-                {
-                  key: 'price',
-                  label: 'Price',
-                  minWidth: '90px',
-                  resizable: true,
-                  onSort: () => handleSort('price'),
-                  sortDirection: sortField === 'price' ? sortDirection : null,
-                },
-                {
-                  key: 'actions',
-                  label: '',
-                  align: 'right',
-                  minWidth: '120px',
-                  shrinkMinWidth: '64px',
-                  resizable: true,
-                  keepRight: true
-                }
-              ]}
-            >
-              {paginatedMaterials.map((material) => (
-                <MaterialListRow
-                  key={material.id}
-                  material={material}
-                  onDelete={handleDelete}
-                />
-              ))}
-            </ResponsiveTable>
+            <div className="bg-white shadow overflow-hidden rounded-lg">
+              <Table className="table-fixed w-full">
+                <TableHeader>
+                  {table.getHeaderGroups().map((headerGroup) => (
+                    <TableRow key={headerGroup.id} className="bg-gray-50 border-b border-gray-200">
+                      {headerGroup.headers.map((header) => (
+                        <TableHead
+                          key={header.id}
+                          className="px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider"
+                          style={{
+                            width: header.getSize() !== 150 ? header.getSize() : undefined,
+                            minWidth: header.column.columnDef.minSize,
+                          }}
+                        >
+                          {header.isPlaceholder
+                            ? null
+                            : flexRender(header.column.columnDef.header, header.getContext())}
+                        </TableHead>
+                      ))}
+                    </TableRow>
+                  ))}
+                </TableHeader>
+                <TableBody>
+                  {paginatedMaterials.map((material) => (
+                    <MaterialListRow
+                      key={material.id}
+                      material={material}
+                      onDelete={handleDelete}
+                    />
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           )}
 
         {/* Pagination (list view only) */}

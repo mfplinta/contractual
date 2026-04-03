@@ -89,7 +89,7 @@ function App() {
               transition: TouchTransition,
               options: {
                 enableMouseEvents: true,
-                delayTouchStart: 250,
+                delayTouchStart: 450,
                 touchSlop: 8,
                 ignoreContextMenu: true,
               },

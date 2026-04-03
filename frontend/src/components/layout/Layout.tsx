@@ -10,6 +10,7 @@ import { useIsMobileWidth, useIsTouchDevice } from '../ui/use-mobile';
 import { CartPreview } from '../../features/cart/components/CartPreview';
 import { useAccentColor } from '../../hooks/useAccentColor';
 import { UserMenu } from '@/features/auth/components/UserMenu';
+import { FullPageSpinner } from '@/components/shared/Spinner';
 
 export const Layout = () => {
   const {
@@ -130,17 +131,15 @@ export const Layout = () => {
   }), [addToCart, currentGroups]);
 
   const cartCountLabel = itemCount > 0
-    ? `${itemCount} ($${billTotal.toFixed(2)})`
+    ? isCompactWidth
+      ? `${itemCount}`
+      : `${itemCount} ($${billTotal.toFixed(2)})`
     : `${itemCount}`;
 
   const isCartVisible = !isCartPage && (isCartOpen || isDragNearCart || isOverCart);
 
   if (!isSettingsLoaded) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-300 border-t-gray-600" />
-      </div>
-    );
+    return <FullPageSpinner />;
   }
 
   return (

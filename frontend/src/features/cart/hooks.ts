@@ -66,6 +66,7 @@ export const useCart = () => {
 
   const {
     data: jobItemsData = { materialItems: [], laborItems: [], groups: [] },
+    isLoading: isCartLoading,
   } = useJobsMaterialsRetrieveQuery({ id: activeJobRef });
 
   const currentMaterialItems = jobItemsData.materialItems;
@@ -315,6 +316,7 @@ export const useCart = () => {
     currentJobId,
     isViewingSavedJob,
     isCartEditMode,
+    isCartLoading,
     selectedClient,
     jobDescription,
     cartPreviewScrollTop,
