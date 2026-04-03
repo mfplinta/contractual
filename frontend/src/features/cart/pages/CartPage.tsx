@@ -3,6 +3,7 @@ import { useCart } from "../hooks";
 import { useJobs } from "@/features/jobs/hooks";
 import { useClients } from "@/features/clients/hooks";
 import { useSettings } from "@/features/settings/hooks";
+import { CenteredSpinner } from "@/components/shared/Spinner";
 import {
   Trash2,
   Save,
@@ -69,6 +70,7 @@ export const CartPage = () => {
     billSubtotal,
     billTaxTotal,
     billTotal,
+    isCartLoading,
   } = useCart();
   const { addJob, updateJob, jobs, beginEditJob, cancelEditJob } = useJobs();
   const { clients, addClient } = useClients();
@@ -76,11 +78,7 @@ export const CartPage = () => {
   const { data: materials = [] } = useMaterialsListQuery();
 
   if(!settings) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <span className="text-gray-500">Loading...</span>
-      </div>
-    );
+    return <CenteredSpinner className="h-64" />;
   }
 
   const navigate = useNavigate();
@@ -841,11 +839,13 @@ export const CartPage = () => {
             );
           })}
 
-          {currentMaterialItems.length === 0 && currentGroups.length <= 1 && (
+          {isCartLoading ? (
+            <CenteredSpinner className="h-48" />
+          ) : currentMaterialItems.length === 0 && currentGroups.length <= 1 ? (
             <div className="bg-white shadow rounded-lg border-2 border-gray-200 p-8 text-center text-gray-500">
               Your cart is empty
             </div>
-          )}
+          ) : null}
         </div>
 
         {/* Sidebar Summary */}

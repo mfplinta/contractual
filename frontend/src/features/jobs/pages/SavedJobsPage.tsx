@@ -2,12 +2,12 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useJobs } from '../hooks';
 import { useClients } from '@/features/clients/hooks';
 import { useCart } from '@/features/cart/hooks';
-import { Calendar, User, Trash2, Filter as FilterIcon, Eye } from 'lucide-react';
+import { Calendar, User, Trash2, Filter as FilterIcon, ArrowUpDown } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { format } from 'date-fns';
 import { FilterBar, FilterItem } from '@/components/shared/FilterBar';
-import { ResponsiveTable, ResponsiveTableCell } from '@/components/shared/ResponsiveTable';
-import { TableRow } from '@/components/ui/table';
+import { DataTable } from '@/components/shared/DataTable';
+import type { ColumnDef } from '@tanstack/react-table';
 import { Button } from '@/components/ui/Button';
 import { Helmet } from 'react-helmet';
 import { useFuse } from '@/hooks/useFuse';
@@ -18,8 +18,6 @@ export const SavedJobsPage = () => {
   const { currentJobId } = useCart();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [sortField, setSortField] = useState<'description' | 'client' | 'createdAt'>('createdAt');
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [searchQuery, setSearchQuery] = useState('');
 
   // Resolve the client filter from ?client= whenever URL or clients change.
@@ -67,42 +65,15 @@ export const SavedJobsPage = () => {
     }
   };
 
-  const handleSort = (field: 'description' | 'client' | 'createdAt') => {
-    if (sortField === field) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortField(field);
-      setSortDirection('asc');
-    }
-  };
-
-  const sortedJobs = [...jobs]
-    .sort((a, b) => {
-    let aVal: any;
-    let bVal: any;
-    
-    if (sortField === 'client') {
-      aVal = a.client?.name ?? '';
-      bVal = b.client?.name ?? '';
-    } else {
-      aVal = a[sortField];
-      bVal = b[sortField];
-    }
-    
-    if (aVal < bVal) return sortDirection === 'asc' ? -1 : 1;
-    if (aVal > bVal) return sortDirection === 'asc' ? 1 : -1;
-    return 0;
-  });
-
   // Build a searchable list that includes the resolved client name
   const jobsWithClientName = useMemo(
-    () => sortedJobs.map(job => ({
+    () => jobs.map(job => ({
       ...job,
       _clientName: job.client?.name ?? 'Unknown Client',
       _clientId: String(job.client?.id ?? ''),
       _jobId: String(job.id),
     })),
-    [sortedJobs, clients]
+    [jobs, clients]
   );
 
   const searchJobs = useFuse(jobsWithClientName, [
@@ -170,6 +141,89 @@ export const SavedJobsPage = () => {
     navigate('/cart', { state: { jobId } });
   };
 
+  const jobColumns: ColumnDef<typeof jobsWithClientName[number]>[] = useMemo(() => [
+    {
+      accessorKey: 'description',
+      header: ({ column }) => (
+        <button
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+          className="text-left hover:text-gray-700 flex items-center gap-1 w-full uppercase text-[12px]"
+        >
+          Job Name
+          <ArrowUpDown className="h-3.5 w-3.5" />
+        </button>
+      ),
+      minSize: 120,
+      cell: ({ row }) => (
+        <p className="text-sm font-medium text-gray-900 truncate max-w-full">{row.original.description}</p>
+      ),
+    },
+    {
+      accessorKey: '_clientName',
+      header: ({ column }) => (
+        <button
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+          className="text-left hover:text-gray-700 flex items-center gap-1 w-full uppercase text-[12px]"
+        >
+          Client
+          <ArrowUpDown className="h-3.5 w-3.5" />
+        </button>
+      ),
+      cell: ({ row }) => (
+        <div className="text-sm text-gray-500 flex items-center min-w-0">
+          <User className="h-4 w-4 mr-1.5 text-gray-400 flex-none" />
+          <span className="truncate">{row.original.client?.name ?? 'Unknown Client'}</span>
+        </div>
+      ),
+    },
+    {
+      accessorKey: 'createdAt',
+      header: ({ column }) => (
+        <button
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+          className="text-left hover:text-gray-700 flex items-center gap-1 w-full uppercase text-[12px]"
+        >
+          Created
+          <ArrowUpDown className="h-3.5 w-3.5" />
+        </button>
+      ),
+      size: 140,
+      cell: ({ row }) => (
+        <div className="text-sm text-gray-500 flex items-center">
+          <Calendar className="h-4 w-4 mr-1.5 text-gray-400 flex-none" />
+          {row.original.createdAt ? format(new Date(row.original.createdAt), 'PP') : '—'}
+        </div>
+      ),
+    },
+    {
+      id: 'actions',
+      size: 40,
+      header: () => null,
+      cell: ({ row }) => {
+        const job = row.original;
+        return (
+          <div className="flex justify-end">
+            <Button
+              size="sm"
+              variant="ghost"
+              tooltip="Delete"
+              onClick={(event: React.MouseEvent) => {
+                event.stopPropagation();
+                if (confirm('Are you sure you want to delete this job?')) {
+                  deleteJob(job.id);
+                }
+              }}
+              className="text-red-400 hover:text-red-600 min-h-9 min-w-9 p-2"
+              aria-label="Delete Job"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
+        );
+      },
+    },
+  ], []);
+
   return (
     <div>
       <Helmet>
@@ -192,102 +246,13 @@ export const SavedJobsPage = () => {
         />
       </div>
 
-      <ResponsiveTable
-        columns={[
-          {
-            key: 'description',
-            label: 'Job Name',
-            expand: true,
-            minWidth: '160px',
-            onSort: () => handleSort('description'),
-            sortDirection: sortField === 'description' ? sortDirection : null,
-          },
-          {
-            key: 'client',
-            label: 'Client',
-            minWidth: '120px',
-            width: 200,
-            onSort: () => handleSort('client'),
-            sortDirection: sortField === 'client' ? sortDirection : null,
-          },
-          {
-            key: 'created',
-            label: 'Created',
-            minWidth: '120px',
-            width: 160,
-            onSort: () => handleSort('createdAt'),
-            sortDirection: sortField === 'createdAt' ? sortDirection : null,
-          },
-          {
-            key: 'actions',
-            label: '',
-            align: 'right',
-            keepRight: true,
-            width: 100,
-            minWidth: '80px',
-          },
-        ]}
-      >
-        {filteredJobs.length === 0 ? (
-          <TableRow>
-            <ResponsiveTableCell colSpan={4} className="px-4 py-12 text-center text-sm text-gray-500">
-              {selectedFilters.length > 0 || searchQuery ? 'No jobs match your filters.' : 'No saved jobs found.'}
-            </ResponsiveTableCell>
-          </TableRow>
-        ) : (
-          filteredJobs.map(job => (
-            <TableRow key={job.id} className="hover:bg-gray-50 transition-colors">
-              <ResponsiveTableCell columnKey="description" className="px-4 py-3">
-                <p className="text-sm font-medium text-gray-900 truncate">{job.description}</p>
-              </ResponsiveTableCell>
-              <ResponsiveTableCell columnKey="client" className="px-4 py-3">
-                <div className="text-sm text-gray-500 flex items-center">
-                  <User className="h-4 w-4 mr-1.5 text-gray-400 flex-none" />
-                  <span className="truncate">{job.client?.name ?? 'Unknown Client'}</span>
-                </div>
-              </ResponsiveTableCell>
-              <ResponsiveTableCell columnKey="created" className="px-4 py-3">
-                <div className="text-sm text-gray-500 flex items-center">
-                  <Calendar className="h-4 w-4 mr-1.5 text-gray-400 flex-none" />
-                  {job.createdAt ? format(new Date(job.createdAt), 'PP') : '—'}
-                </div>
-              </ResponsiveTableCell>
-              <ResponsiveTableCell columnKey="actions" className="px-4 py-3">
-                <div className="flex justify-end gap-2">
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    tooltip="View & Edit"
-                    onClick={(event: React.MouseEvent) => {
-                      event.stopPropagation();
-                      handleViewEdit(job.id);
-                    }}
-                    className="text-[var(--accent-600)] hover:text-[var(--accent-900)] min-h-9 min-w-9 p-2"
-                    aria-label="View & Edit"
-                  >
-                    <Eye className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    tooltip="Delete"
-                    onClick={(event: React.MouseEvent) => {
-                      event.stopPropagation();
-                      if (confirm('Are you sure you want to delete this job?')) {
-                        deleteJob(job.id);
-                      }
-                    }}
-                    className="text-red-400 hover:text-red-600 min-h-9 min-w-9 p-2"
-                    aria-label="Delete Job"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </ResponsiveTableCell>
-            </TableRow>
-          ))
-        )}
-      </ResponsiveTable>
+      <DataTable
+        columns={jobColumns}
+        data={filteredJobs}
+        initialSorting={[{ id: 'createdAt', desc: true }]}
+        onRowClick={(job) => handleViewEdit(job.id)}
+        noResultsMessage={selectedFilters.length > 0 || searchQuery ? 'No jobs match your filters.' : 'No saved jobs found.'}
+      />
     </div>
   );
 };
