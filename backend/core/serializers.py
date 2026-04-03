@@ -20,7 +20,7 @@ class StoreSerializer(serializers.ModelSerializer):
 class UnitSerializer(serializers.ModelSerializer):
     class Meta:
         model = Unit
-        fields = ["id", "name"]
+        fields = ["id", "name", "shorthand"]
 
 
 class TagSerializer(serializers.ModelSerializer):

@@ -721,7 +721,6 @@ paths:
   /api/jobs/{id}/begin-edit/:
     post:
       operationId: jobsBeginEditCreate
-      description: Snapshot the current job materials and groups before editing begins.
       parameters:
       - in: path
         name: id
@@ -743,8 +742,6 @@ paths:
   /api/jobs/{id}/cancel-edit/:
     post:
       operationId: jobsCancelEditCreate
-      description: Restore job materials and groups from snapshot, discarding in-progress
-        edits.
       parameters:
       - in: path
         name: id
@@ -766,7 +763,6 @@ paths:
   /api/jobs/{id}/export/:
     get:
       operationId: jobsExportRetrieve
-      description: GET /jobs/{pk}/export/?show_labor_details=...&fmt=...
       parameters:
       - in: query
         name: fmt
@@ -799,8 +795,6 @@ paths:
   /api/jobs/{id}/materials/:
     get:
       operationId: jobsMaterialsRetrieve
-      description: GET /jobs/{pk}/materials/ — returns all groups, materials, and
-        labor items.
       parameters:
       - in: path
         name: id
@@ -822,7 +816,6 @@ paths:
   /api/jobs/{id}/materials/reorder/:
     post:
       operationId: jobsMaterialsReorderCreate
-      description: POST /jobs/{pk}/materials/reorder/
       parameters:
       - in: path
         name: id
@@ -850,7 +843,6 @@ paths:
   /api/jobs/{id}/tax-rate/:
     post:
       operationId: jobsTaxRateCreate
-      description: POST /jobs/{pk}/tax-rate/
       parameters:
       - in: path
         name: id
@@ -878,6 +870,7 @@ paths:
   /api/materials/:
     get:
       operationId: materialsList
+      description: Mixin providing image upload/delete/attach logic for materials.
       tags:
       - materials
       security:
@@ -893,6 +886,7 @@ paths:
           description: ''
     post:
       operationId: materialsCreate
+      description: Mixin providing image upload/delete/attach logic for materials.
       tags:
       - materials
       requestBody:
@@ -919,6 +913,7 @@ paths:
   /api/materials/{id}/:
     get:
       operationId: materialsRetrieve
+      description: Mixin providing image upload/delete/attach logic for materials.
       parameters:
       - in: path
         name: id
@@ -939,6 +934,7 @@ paths:
           description: ''
     put:
       operationId: materialsUpdate
+      description: Mixin providing image upload/delete/attach logic for materials.
       parameters:
       - in: path
         name: id
@@ -971,6 +967,7 @@ paths:
           description: ''
     patch:
       operationId: materialsPartialUpdate
+      description: Mixin providing image upload/delete/attach logic for materials.
       parameters:
       - in: path
         name: id
@@ -1002,6 +999,7 @@ paths:
           description: ''
     delete:
       operationId: materialsDestroy
+      description: Mixin providing image upload/delete/attach logic for materials.
       parameters:
       - in: path
         name: id
@@ -1045,7 +1043,6 @@ paths:
   /api/settings/:
     get:
       operationId: settingsRetrieve
-      description: GET /settings/
       tags:
       - settings
       security:
@@ -1059,7 +1056,6 @@ paths:
           description: ''
     put:
       operationId: settingsUpdate
-      description: PUT /settings/
       tags:
       - settings
       requestBody:
@@ -1081,7 +1077,6 @@ paths:
   /api/settings/companyLogo/:
     put:
       operationId: settingsCompanyLogoUpdate
-      description: PUT /settings/companyLogo/
       tags:
       - settings
       requestBody:
@@ -1104,7 +1099,6 @@ paths:
           description: ''
     delete:
       operationId: settingsCompanyLogoDestroy
-      description: DELETE /settings/companyLogo/
       tags:
       - settings
       security:
@@ -2372,6 +2366,10 @@ components:
         name:
           type: string
           maxLength: 100
+        shorthand:
+          type: string
+          nullable: true
+          maxLength: 50
     PatchedUser:
       type: object
       description: User model w/o password
@@ -2573,6 +2571,10 @@ components:
         name:
           type: string
           maxLength: 100
+        shorthand:
+          type: string
+          nullable: true
+          maxLength: 50
       required:
       - id
       - name

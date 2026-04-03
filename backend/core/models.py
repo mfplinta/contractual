@@ -16,6 +16,7 @@ class Store(models.Model):
 class Unit(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=100, unique=True)
+    shorthand = models.CharField(max_length=50, null=True, blank=True)
 
     class Meta:
         db_table = 'api_unit'
