@@ -263,6 +263,7 @@ const injectedRtkApi = api.injectEndpoints({
         params: {
           fmt: queryArg.fmt,
           showLaborDetails: queryArg.showLaborDetails,
+          unifyGroups: queryArg.unifyGroups,
         },
       }),
     }),
@@ -666,6 +667,8 @@ export type JobsExportRetrieveApiArg = {
   id: number;
   /** Show labor details */
   showLaborDetails?: string;
+  /** Unify all groups into one */
+  unifyGroups?: string;
 };
 export type JobsMaterialsRetrieveApiResponse =
   /** status 200  */ JobMaterialsResponseRead;
@@ -1265,6 +1268,7 @@ export type SettingsResponse = {
   companyLogoUrl: string | null;
   defaultExportFormat: string;
   defaultExportShowLaborDetails: boolean;
+  defaultExportUnifyGroups: boolean;
 };
 export type MaterialsViewModeEnum = "grid" | "list";
 export type DefaultExportFormatEnum = "excel" | "pdf";
@@ -1274,6 +1278,7 @@ export type Settings = {
   accentColor?: string;
   defaultExportFormat?: DefaultExportFormatEnum;
   defaultExportShowLaborDetails?: boolean;
+  defaultExportUnifyGroups?: boolean;
 };
 export type CompanyLogoResponse = {
   companyLogoUrl: string;

@@ -19,9 +19,26 @@ COLORS = {
     'totals_header': 'E2EFD9',
 }
 
-def build_job_workbook(job_id, show_labor_details=False):
+def build_job_workbook(job_id, show_labor_details=False, unify_groups=False):
     job = get_object_or_404(Job, pk=job_id)
     groups = JobGroup.objects.filter(job=job).order_by('sort_order', 'id')
+
+    if unify_groups:
+        from django.db.models import Sum
+        labor_agg = groups.aggregate(
+            total_labor_time=Sum('labor_time_total'),
+            total_labor_cost=Sum('labor_cost_total'),
+        )
+
+        class _UnifiedGroup:
+            name = None
+            subtotal = job.subtotal
+            tax_total = job.tax_total
+            total = job.total
+            labor_time_total = labor_agg['total_labor_time'] or 0
+            labor_cost_total = labor_agg['total_labor_cost'] or 0
+
+        groups = [_UnifiedGroup()]
 
     tax_rate = float(job.tax_rate) if job.tax_rate else 0.0
     if not tax_rate:
@@ -88,9 +105,35 @@ def build_job_workbook(job_id, show_labor_details=False):
     }
 
     for group in groups:
-        group_materials = JobMaterial.objects.filter(group=group).select_related(
-            'variant', 'variant__material', 'variant__unit', 'store',
-        ).order_by('sort_order', 'id')
+        if unify_groups:
+            group_materials = (
+                JobMaterial.objects.filter(group__job=job)
+                .select_related('variant', 'variant__material', 'variant__unit', 'store')
+                .order_by('group__sort_order', 'sort_order', 'id')
+            )
+            # Merge rows with the same (variant, store)
+            seen = {}
+            merged_materials = []
+            for jm in group_materials:
+                key = (jm.variant_id, jm.store_id)
+                if key in seen:
+                    existing = seen[key]
+                    existing.quantity += jm.quantity
+                    existing.subtotal += jm.subtotal
+                    existing.tax += jm.tax
+                    existing.total_price += jm.total_price
+                    if jm.ignored:
+                        existing.ignored = True
+                else:
+                    seen[key] = jm
+                    merged_materials.append(jm)
+            group_materials = merged_materials
+        else:
+            group_materials = list(
+                JobMaterial.objects.filter(group=group)
+                .select_related('variant', 'variant__material', 'variant__unit', 'store')
+                .order_by('sort_order', 'id')
+            )
 
         # Group header
         if group.name:
@@ -142,7 +185,7 @@ def build_job_workbook(job_id, show_labor_details=False):
             if jm.ignored:
                 style_range(ws, f"G{row_idx}:M{row_idx}", font=Font(color='FF0000'))
 
-        num_materials = group_materials.count()
+        num_materials = len(group_materials)
 
         # Group subtotal row
         subtotal_row = data_start_row + num_materials
@@ -161,7 +204,10 @@ def build_job_workbook(job_id, show_labor_details=False):
         section_end_row = subtotal_row
 
         # -- Labor section --
-        labor_items = JobLabor.objects.filter(group=group).order_by('id')
+        if unify_groups:
+            labor_items = JobLabor.objects.filter(group__job=job).order_by('id')
+        else:
+            labor_items = JobLabor.objects.filter(group=group).order_by('id')
 
         if labor_items.exists():
             ws.merge_cells(f'B{current_row}:M{current_row}')

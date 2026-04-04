@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Download } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/Button";
 import { ComboboxSelect } from "@/components/shared/ComboboxSelect";
-import { useSystemRetrieveQuery } from "@/services/api";
+import { useSystemRetrieveQuery, useSettingsRetrieveQuery, useSettingsUpdateMutation } from "@/services/api";
 
 type ExportFormat = "excel" | "pdf";
 
@@ -18,14 +18,25 @@ export const ExportPopover = ({
   onExport,
 }: {
   disabled: boolean;
-  onExport: (format: ExportFormat, showLaborDetails: boolean) => void;
+  onExport: (format: ExportFormat, showLaborDetails: boolean, unifyGroups: boolean) => void;
 }) => {
   const [open, setOpen] = useState(false);
   const [selectedFormat, setSelectedFormat] = useState<string>("excel");
   const [showLaborDetails, setShowLaborDetails] = useState(false);
+  const [unifyGroups, setUnifyGroups] = useState(false);
 
   const { data: systemInfo } = useSystemRetrieveQuery();
+  const { data: settings } = useSettingsRetrieveQuery();
+  const [updateSettings] = useSettingsUpdateMutation();
   const hasLibreOffice = systemInfo?.hasLibreOffice ?? false;
+
+  useEffect(() => {
+    if (settings) {
+      setSelectedFormat(settings.defaultExportFormat ?? "excel");
+      setShowLaborDetails(settings.defaultExportShowLaborDetails ?? false);
+      setUnifyGroups(settings.defaultExportUnifyGroups ?? false);
+    }
+  }, [settings]);
 
   const availableOptions = hasLibreOffice
     ? FORMAT_OPTIONS
@@ -33,7 +44,14 @@ export const ExportPopover = ({
 
   const handleExport = () => {
     if (selectedFormat.length === 0) return;
-    onExport(selectedFormat as ExportFormat, showLaborDetails);
+    onExport(selectedFormat as ExportFormat, showLaborDetails, unifyGroups);
+    updateSettings({
+      settings: {
+        defaultExportFormat: selectedFormat as ExportFormat,
+        defaultExportShowLaborDetails: showLaborDetails,
+        defaultExportUnifyGroups: unifyGroups,
+      },
+    });
     setOpen(false);
   };
 
@@ -46,7 +64,7 @@ export const ExportPopover = ({
         </Button>
       </PopoverTrigger>
       <PopoverContent align="start" className="w-72 p-4 space-y-4 bg-white">
-        {/* Format selection — multi combobox */}
+        {/* Format selection */}
         <ComboboxSelect
           mode="single"
           label="Format"
@@ -54,7 +72,7 @@ export const ExportPopover = ({
           options={availableOptions}
           onChange={setSelectedFormat}
           allowCreate={false}
-          placeholder="Select formats..."
+          placeholder="Select format..."
           openOnFocus={false}
         />
 
@@ -68,6 +86,19 @@ export const ExportPopover = ({
               }
             />
             Show labor details
+          </label>
+        </div>
+
+        {/* Unify groups checkbox */}
+        <div>
+          <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700">
+            <Checkbox
+              checked={unifyGroups}
+              onCheckedChange={(checked) =>
+                setUnifyGroups(checked === true)
+              }
+            />
+            Unify groups
           </label>
         </div>
 

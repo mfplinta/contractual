@@ -16,3 +16,4 @@ class SettingsSerializer(serializers.Serializer):
         required=False,
     )
     default_export_show_labor_details = serializers.BooleanField(required=False)
+    default_export_unify_groups = serializers.BooleanField(required=False)
