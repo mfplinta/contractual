@@ -285,10 +285,11 @@ export const CartPage = () => {
     }
   };
 
-  const doExport = async (jobId: number, format: string, showLaborDetails: boolean) => {
+  const doExport = async (jobId: number, format: string, showLaborDetails: boolean, unifyGroups: boolean) => {
     const params = new URLSearchParams();
     if (format) params.set("fmt", format);
     if (showLaborDetails) params.set("showLaborDetails", "true");
+    if (unifyGroups) params.set("unifyGroups", "true");
     const queryString = params.toString();
     const url = `/api/jobs/${jobId}/export${queryString ? `?${queryString}` : ""}`;
 
@@ -317,6 +318,7 @@ export const CartPage = () => {
   const handleExport = async (
     format: string = "excel",
     showLaborDetails: boolean = false,
+    unifyGroups: boolean = false,
   ) => {
     try {
       let jobId: number | undefined;
@@ -340,7 +342,7 @@ export const CartPage = () => {
       }
 
       // Export each selected format
-      await doExport(jobId, format, showLaborDetails);
+      await doExport(jobId, format, showLaborDetails, unifyGroups);
     } catch (error) {
       console.error(error);
       alert("Failed to export job");

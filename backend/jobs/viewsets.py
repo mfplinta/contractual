@@ -385,6 +385,7 @@ class JobViewSet(viewsets.ModelViewSet):
         parameters=[
             OpenApiParameter("showLaborDetails", str, description="Show labor details"),
             OpenApiParameter("fmt", str, description="Export format: excel or pdf"),
+            OpenApiParameter("unifyGroups", str, description="Unify all groups into one"),
         ],
     )
     @action(detail=True, methods=["get"])
@@ -392,10 +393,13 @@ class JobViewSet(viewsets.ModelViewSet):
         show_labor_details = (
             request.query_params.get("show_labor_details", "false").lower() == "true"
         )
+        unify_groups = (
+            request.query_params.get("unify_groups", "false").lower() == "true"
+        )
         fmt = request.query_params.get("fmt", "excel").lower()
 
         output, filename = build_job_workbook(
-            pk, show_labor_details=show_labor_details
+            pk, show_labor_details=show_labor_details, unify_groups=unify_groups
         )
 
         if fmt == "pdf":

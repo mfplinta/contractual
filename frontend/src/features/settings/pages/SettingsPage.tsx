@@ -21,8 +21,6 @@ export const SettingsPage = () => {
   const [deleteLogo] = useSettingsCompanyLogoDestroyMutation();
 
   const currentLogoUrl = settings?.companyLogoUrl ?? null;
-
-  // Sync local state when settings load from the API (e.g. on hard refresh)
   useEffect(() => {
     if (!settings) return;
     setTaxRate(settings.taxRate * 100);

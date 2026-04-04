@@ -780,6 +780,11 @@ paths:
         schema:
           type: string
         description: Show labor details
+      - in: query
+        name: unifyGroups
+        schema:
+          type: string
+        description: Unify all groups into one
       tags:
       - jobs
       security:
@@ -2458,6 +2463,8 @@ components:
           $ref: '#/components/schemas/DefaultExportFormatEnum'
         defaultExportShowLaborDetails:
           type: boolean
+        defaultExportUnifyGroups:
+          type: boolean
     SettingsResponse:
       type: object
       properties:
@@ -2475,11 +2482,14 @@ components:
           type: string
         defaultExportShowLaborDetails:
           type: boolean
+        defaultExportUnifyGroups:
+          type: boolean
       required:
       - accentColor
       - companyLogoUrl
       - defaultExportFormat
       - defaultExportShowLaborDetails
+      - defaultExportUnifyGroups
       - materialsViewMode
       - taxRate
     StatusEnum:

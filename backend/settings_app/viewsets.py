@@ -27,6 +27,7 @@ class SettingsViewSet(viewsets.ViewSet):
                 "company_logo_url": serializers.CharField(allow_null=True),
                 "default_export_format": serializers.CharField(),
                 "default_export_show_labor_details": serializers.BooleanField(),
+                "default_export_unify_groups": serializers.BooleanField(),
             },
         )}
     )
@@ -52,6 +53,10 @@ class SettingsViewSet(viewsets.ViewSet):
                     "default_export_show_labor_details", "false"
                 ).lower()
                 == "true",
+                "default_export_unify_groups": configs.get(
+                    "default_export_unify_groups", "false"
+                ).lower()
+                == "true",
             }
         )
 
@@ -67,6 +72,7 @@ class SettingsViewSet(viewsets.ViewSet):
             "accent_color": str,
             "default_export_format": str,
             "default_export_show_labor_details": lambda v: str(v).lower(),
+            "default_export_unify_groups": lambda v: str(v).lower(),
         }
 
         for key, transform in setting_keys.items():

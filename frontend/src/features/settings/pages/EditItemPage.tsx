@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { Button } from "@/components/ui/Button";
 import { ChevronLeft, Plus, Check, X, Edit, Trash2, ArrowUpDown } from "lucide-react";
@@ -189,6 +189,8 @@ export const EditItemPage = () => {
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValues, setEditValues] = useState<Record<string, string>>({});
+  const editValuesRef = useRef(editValues);
+  editValuesRef.current = editValues;
   const [addingNew, setAddingNew] = useState(false);
   const [newValues, setNewValues] = useState<Record<string, string>>({});
   // Reset state when kind changes
@@ -222,7 +224,7 @@ export const EditItemPage = () => {
                 type={field.type || "text"}
                 autoFocus={config.fields.indexOf(field) === 0}
                 className="w-full rounded-md border border-gray-300 bg-white px-2 py-1 text-sm focus:border-[var(--accent-500)] focus:ring-1 focus:ring-[var(--accent-500)] focus:outline-none"
-                value={editValues[field.key] ?? ""}
+                value={editValuesRef.current[field.key] ?? ""}
                 onChange={(e) =>
                   setEditValues((prev) => ({
                     ...prev,
@@ -230,8 +232,8 @@ export const EditItemPage = () => {
                   }))
                 }
                 onKeyDown={(e) => {
-                  if (e.key === "Enter") saveEdit();
-                  if (e.key === "Escape") cancelEdit();
+                  if (e.key === "Enter") saveEditRef.current();
+                  if (e.key === "Escape") cancelEditRef.current();
                 }}
               />
             );
@@ -258,7 +260,7 @@ export const EditItemPage = () => {
                   <Button
                     size="sm"
                     variant="ghost"
-                    onClick={saveEdit}
+                    onClick={() => saveEditRef.current()}
                     aria-label="Save"
                   >
                     <Check className="h-4 w-4 text-green-600" />
@@ -266,7 +268,7 @@ export const EditItemPage = () => {
                   <Button
                     size="sm"
                     variant="ghost"
-                    onClick={cancelEdit}
+                    onClick={() => cancelEditRef.current()}
                     aria-label="Cancel"
                   >
                     <X className="h-4 w-4 text-gray-500" />
@@ -299,7 +301,7 @@ export const EditItemPage = () => {
         },
       },
     ],
-    [config, editingId, editValues],
+    [config, editingId],
   );
 
   const startEdit = (item: Record<string, unknown>) => {
@@ -320,13 +322,18 @@ export const EditItemPage = () => {
   const saveEdit = async () => {
     if (!editingId) return;
     try {
-      await updateItem(editingId, editValues);
+      await updateItem(editingId, editValuesRef.current);
       setEditingId(null);
       setEditValues({});
     } catch {
       // Error handled by RTK Query
     }
   };
+
+  const saveEditRef = useRef(saveEdit);
+  saveEditRef.current = saveEdit;
+  const cancelEditRef = useRef(cancelEdit);
+  cancelEditRef.current = cancelEdit;
 
   const startAdd = () => {
     setAddingNew(true);
